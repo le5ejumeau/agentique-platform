@@ -1,0 +1,15 @@
+{
+  "name": "agentique-platform",
+  "private": true,
+  "packageManager": "pnpm@10.28.0",
+  "scripts": {
+    "dev": "pnpm --filter @agentique/web dev",
+    "build": "pnpm --filter @agentique/web build",
+    "test": "pnpm -r --if-present test",
+    "typecheck": "pnpm -r --if-present typecheck"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3",
+    "vitest": "^4.1.0"
+  }
+}
