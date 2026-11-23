@@ -20,14 +20,14 @@ Les étapes et les transitions autorisées sont définies dans `packages/core/sr
 
 ## Agents
 
-| Agent | État | Rôle |
-| --- | --- | --- |
-| Orchestrateur | Lot 1 | Fait avancer le projet, déclenche les agents, publie les événements |
-| Analyste fonctionnel | Lot 1 | Mène l'entretien, au plus 3 questions par message |
-| Rédacteur de spécifications | Lot 1 | Produit le cahier des charges et le backlog (sortie structurée) |
-| Designer UX | Lot 2 | Écrans, navigation, thème |
-| Développeur prototype | Lot 2 | Code front React (web) ou Expo (mobile) avec données simulées |
-| Contrôleur qualité | Lot 2 | Couverture des user stories, lancement du prototype |
+| Agent                       | État  | Rôle                                                                |
+| --------------------------- | ----- | ------------------------------------------------------------------- |
+| Orchestrateur               | Lot 1 | Fait avancer le projet, déclenche les agents, publie les événements |
+| Analyste fonctionnel        | Lot 1 | Mène l'entretien, au plus 3 questions par message                   |
+| Rédacteur de spécifications | Lot 1 | Produit le cahier des charges et le backlog (sortie structurée)     |
+| Designer UX                 | Lot 2 | Écrans, navigation, thème                                           |
+| Développeur prototype       | Lot 2 | Code front React (web) ou Expo (mobile) avec données simulées       |
+| Contrôleur qualité          | Lot 2 | Couverture des user stories, lancement du prototype                 |
 
 L'Analyste et le Rédacteur font chacun un appel à l'API Claude (`claude-opus-5-5`) avec sortie structurée validée par Zod ; ils n'ont pas besoin d'outils. Le Développeur prototype, qui écrit des fichiers et lance des commandes, s'appuiera sur le Claude Agent SDK dans un conteneur isolé par projet.
 

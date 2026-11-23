@@ -35,7 +35,5 @@ export function projectContext(project: Project): string {
 }
 
 export function transcriptToText(transcript: InterviewMessage[]): string {
-  return transcript
-    .map((m) => `${m.author === "client" ? "Client" : "Analyste"} : ${m.content}`)
-    .join("\n\n");
+  return transcript.map((m) => `${m.author === "client" ? "Client" : "Analyste"} : ${m.content}`).join("\n\n");
 }

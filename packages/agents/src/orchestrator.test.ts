@@ -12,7 +12,12 @@ function setup(model: AgentModel = new DemoModel()) {
 }
 
 async function interviewToTheEnd(orchestrator: Orchestrator, projectId: string) {
-  for (const answer of ["Gérer les réservations", "Le client choisit un créneau puis paie", "Annulation 24 h avant", "Le programme de fidélité"]) {
+  for (const answer of [
+    "Gérer les réservations",
+    "Le client choisit un créneau puis paie",
+    "Annulation 24 h avant",
+    "Le programme de fidélité",
+  ]) {
     await orchestrator.sendClientMessage(projectId, answer);
   }
 }
@@ -20,7 +25,11 @@ async function interviewToTheEnd(orchestrator: Orchestrator, projectId: string) 
 describe("Orchestrator", () => {
   it("ouvre l'entretien avec une première question de l'Analyste", async () => {
     const { store, orchestrator } = setup();
-    const { project, work } = await orchestrator.createProject({ name: "Résa", kind: "web", brief: "Un site de réservation" });
+    const { project, work } = await orchestrator.createProject({
+      name: "Résa",
+      kind: "web",
+      brief: "Un site de réservation",
+    });
     await work;
 
     const messages = await store.listMessages(project.id);
@@ -33,7 +42,11 @@ describe("Orchestrator", () => {
 
   it("rédige le cahier des charges et demande la validation à la fin de l'entretien", async () => {
     const { store, orchestrator } = setup();
-    const { project, work } = await orchestrator.createProject({ name: "Résa", kind: "mobile", brief: "Une app de réservation" });
+    const { project, work } = await orchestrator.createProject({
+      name: "Résa",
+      kind: "mobile",
+      brief: "Une app de réservation",
+    });
     await work;
     await interviewToTheEnd(orchestrator, project.id);
 

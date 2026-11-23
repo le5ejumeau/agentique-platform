@@ -12,35 +12,58 @@ export function useLiveData<T>(url: string, projectId?: string) {
   const [connected, setConnected] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const reload = useCallback(async () => {
-    try {
-      const response = await fetch(url, { cache: "no-store" });
-      const body = await response.json();
-      if (!response.ok) throw new Error(body.error ?? `Erreur ${response.status}`);
-      setData(body as T);
-      setError(null);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
-    }
-  }, [url]);
+  const reload = useCallback(
+    () =>
+      fetchJson<T>(url).then(
+        (body) => {
+          setData(body);
+          setError(null);
+        },
+        (e: unknown) => setError(e instanceof Error ? e.message : String(e)),
+      ),
+    [url],
+  );
 
   useEffect(() => {
-    void reload();
-    const source = new EventSource(projectId ? `/api/stream?projectId=${encodeURIComponent(projectId)}` : "/api/stream");
+    let cancelled = false;
+    const refresh = () =>
+      fetchJson<T>(url).then(
+        (body) => {
+          if (cancelled) return;
+          setData(body);
+          setError(null);
+        },
+        (e: unknown) => {
+          if (!cancelled) setError(e instanceof Error ? e.message : String(e));
+        },
+      );
+
+    void refresh();
+    const source = new EventSource(
+      projectId ? `/api/stream?projectId=${encodeURIComponent(projectId)}` : "/api/stream",
+    );
     source.onopen = () => setConnected(true);
     source.onerror = () => setConnected(false);
     source.onmessage = () => {
       // Plusieurs écritures arrivent souvent ensemble : un seul rechargement.
       if (timer.current) clearTimeout(timer.current);
-      timer.current = setTimeout(() => void reload(), 120);
+      timer.current = setTimeout(() => void refresh(), 120);
     };
     return () => {
+      cancelled = true;
       source.close();
       if (timer.current) clearTimeout(timer.current);
     };
-  }, [reload, projectId]);
+  }, [url, projectId]);
 
   return { data, error, connected, reload };
+}
+
+async function fetchJson<T>(url: string): Promise<T> {
+  const response = await fetch(url, { cache: "no-store" });
+  const body = await response.json();
+  if (!response.ok) throw new Error(body.error ?? `Erreur ${response.status}`);
+  return body as T;
 }
 
 export async function postJson(url: string, body: unknown = {}) {

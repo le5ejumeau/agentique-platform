@@ -38,7 +38,13 @@ export default function NewProject() {
           <label htmlFor="name" className="block text-sm font-medium">
             Nom du projet
           </label>
-          <input id="name" name="name" required maxLength={200} className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2" />
+          <input
+            id="name"
+            name="name"
+            required
+            maxLength={200}
+            className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
+          />
         </div>
 
         <fieldset>

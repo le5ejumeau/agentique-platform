@@ -28,8 +28,7 @@ export default function Dashboard() {
           </p>
         </div>
         <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={onlyMine} onChange={(e) => setOnlyMine(e.target.checked)} />
-          À traiter par moi
+          <input type="checkbox" checked={onlyMine} onChange={(e) => setOnlyMine(e.target.checked)} />À traiter par moi
         </label>
       </div>
 
@@ -39,7 +38,10 @@ export default function Dashboard() {
         <div className="rounded-lg border border-dashed border-gray-300 bg-white p-10 text-center">
           <p className="text-gray-600">{onlyMine ? "Rien ne vous attend." : "Aucun projet pour l'instant."}</p>
           {!onlyMine && (
-            <Link href="/projets/nouveau" className="mt-3 inline-block text-sm font-medium text-indigo-600 hover:underline">
+            <Link
+              href="/projets/nouveau"
+              className="mt-3 inline-block text-sm font-medium text-indigo-600 hover:underline"
+            >
               Décrire un premier projet
             </Link>
           )}
@@ -55,7 +57,9 @@ export default function Dashboard() {
             >
               <div className="flex items-start justify-between gap-2">
                 <h2 className="font-semibold">{project.name}</h2>
-                <span className="rounded bg-gray-100 px-1.5 py-0.5 text-xs uppercase text-gray-600">{project.kind}</span>
+                <span className="rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-600 uppercase">
+                  {project.kind}
+                </span>
               </div>
               <p className="mt-1 text-sm text-gray-600">{STAGE_LABELS[project.stage]}</p>
               <div className="mt-3">

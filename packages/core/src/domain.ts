@@ -29,12 +29,7 @@ export const STAGE_LABELS: Record<ProjectStage, string> = {
 };
 
 export type AgentRole =
-  | "orchestrateur"
-  | "analyste"
-  | "redacteur"
-  | "designer_ux"
-  | "developpeur_prototype"
-  | "controleur_qualite";
+  "orchestrateur" | "analyste" | "redacteur" | "designer_ux" | "developpeur_prototype" | "controleur_qualite";
 
 export const AGENT_LABELS: Record<AgentRole, string> = {
   orchestrateur: "Orchestrateur",

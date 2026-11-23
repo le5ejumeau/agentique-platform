@@ -26,13 +26,13 @@ type Tab = "entretien" | "livrables";
 
 export function ProjectView({ id }: { id: string }) {
   const { data, error } = useLiveData<Snapshot>(`/api/projects/${id}`, id);
-  const [tab, setTab] = useState<Tab>("entretien");
   const stage = data?.project.stage;
-
-  // Dès que le cahier des charges est prêt, on l'affiche.
-  useEffect(() => {
-    if (stage && stage !== "entretien") setTab("livrables");
-  }, [stage]);
+  // Onglet par défaut selon l'étape : le cahier des charges s'affiche dès qu'il existe.
+  // Un choix du client vaut jusqu'au prochain changement d'étape.
+  const [choice, setChoice] = useState<{ tab: Tab; stage: string | undefined } | null>(null);
+  const tab: Tab =
+    choice && choice.stage === stage ? choice.tab : stage && stage !== "entretien" ? "livrables" : "entretien";
+  const setTab = (value: Tab) => setChoice({ tab: value, stage });
 
   if (error && !data) {
     return (
@@ -56,7 +56,7 @@ export function ProjectView({ id }: { id: string }) {
         </Link>
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-2xl font-semibold">{project.name}</h1>
-          <span className="rounded bg-gray-100 px-1.5 py-0.5 text-xs uppercase text-gray-600">{project.kind}</span>
+          <span className="rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-600 uppercase">{project.kind}</span>
           <StatusBadge project={project} pendingAction={pendingAction} />
         </div>
         <StageTimeline project={project} />
@@ -133,7 +133,7 @@ function Interview({ snapshot }: { snapshot: Snapshot }) {
   return (
     <div className="space-y-4">
       <div className="rounded-md bg-gray-50 p-3 text-sm">
-        <p className="text-xs font-medium uppercase text-gray-500">Votre brief</p>
+        <p className="text-xs font-medium text-gray-500 uppercase">Votre brief</p>
         <p className="mt-1 whitespace-pre-wrap">{project.brief}</p>
       </div>
 
@@ -141,7 +141,7 @@ function Interview({ snapshot }: { snapshot: Snapshot }) {
         {messages.map((m) => (
           <li key={m.id} className={`flex ${m.author === "client" ? "justify-end" : "justify-start"}`}>
             <div
-              className={`max-w-[85%] whitespace-pre-wrap rounded-lg px-3 py-2 text-sm ${
+              className={`max-w-[85%] rounded-lg px-3 py-2 text-sm whitespace-pre-wrap ${
                 m.author === "client" ? "bg-indigo-600 text-white" : "bg-gray-100 text-gray-900"
               }`}
             >
@@ -168,7 +168,11 @@ function Interview({ snapshot }: { snapshot: Snapshot }) {
           />
           {error && <p className="text-sm text-red-700">{error}</p>}
           <div className="flex flex-wrap justify-between gap-2">
-            <button onClick={finish} disabled={analystBusy} className="text-sm text-gray-600 hover:underline disabled:opacity-50">
+            <button
+              onClick={finish}
+              disabled={analystBusy}
+              className="text-sm text-gray-600 hover:underline disabled:opacity-50"
+            >
               J&apos;ai tout dit, rédigez le cahier des charges
             </button>
             <button
@@ -270,7 +274,15 @@ function ActivityFeed({ events }: { events: ProjectEvent[] }) {
       <ol className="mt-3 space-y-3">
         {[...events].reverse().map((e) => (
           <li key={e.id} className="text-sm">
-            <p className={e.type === "erreur" ? "text-red-700" : e.type === "validation_demandee" ? "font-medium text-amber-800" : ""}>
+            <p
+              className={
+                e.type === "erreur"
+                  ? "text-red-700"
+                  : e.type === "validation_demandee"
+                    ? "font-medium text-amber-800"
+                    : ""
+              }
+            >
               {e.message}
             </p>
             <p className="text-xs text-gray-500">

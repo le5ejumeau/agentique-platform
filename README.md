@@ -19,19 +19,19 @@ Les données sont en mémoire pour l'instant : elles disparaissent au redémarra
 
 ## Commandes
 
-| Commande | Effet |
-| --- | --- |
-| `pnpm dev` | Lance l'interface en développement |
-| `pnpm build` | Construit l'interface |
-| `pnpm test` | Lance les tests (Vitest) |
+| Commande         | Effet                                 |
+| ---------------- | ------------------------------------- |
+| `pnpm dev`       | Lance l'interface en développement    |
+| `pnpm build`     | Construit l'interface                 |
+| `pnpm test`      | Lance les tests (Vitest)              |
 | `pnpm typecheck` | Vérifie les types de tous les paquets |
 
 ## Organisation
 
-| Dossier | Contenu |
-| --- | --- |
-| `packages/core` | Modèle métier : étapes, transitions, événements, livrables, format du cahier des charges, accès aux données |
-| `packages/agents` | Orchestrateur et agents (Analyste, Rédacteur), modèle Claude et modèle démo |
-| `apps/web` | Interface Next.js : tableau de bord, page projet, API et flux temps réel (SSE) |
-| `supabase/migrations` | Schéma Postgres, sécurité par ligne et publication temps réel pour Supabase |
-| `docs/architecture.md` | Parcours, rôles des agents, choix techniques et suite prévue |
+| Dossier                | Contenu                                                                                                     |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `packages/core`        | Modèle métier : étapes, transitions, événements, livrables, format du cahier des charges, accès aux données |
+| `packages/agents`      | Orchestrateur et agents (Analyste, Rédacteur), modèle Claude et modèle démo                                 |
+| `apps/web`             | Interface Next.js : tableau de bord, page projet, API et flux temps réel (SSE)                              |
+| `supabase/migrations`  | Schéma Postgres, sécurité par ligne et publication temps réel pour Supabase                                 |
+| `docs/architecture.md` | Parcours, rôles des agents, choix techniques et suite prévue                                                |

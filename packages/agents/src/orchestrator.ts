@@ -72,7 +72,13 @@ export class Orchestrator {
   async sendClientMessage(projectId: string, content: string): Promise<void> {
     const project = await this.require(projectId);
     if (project.stage !== "entretien") throw new Error("L'entretien est terminé pour ce projet.");
-    await this.store.addMessage({ id: this.newId(), projectId, author: "client", content: content.trim(), at: this.timestamp() });
+    await this.store.addMessage({
+      id: this.newId(),
+      projectId,
+      author: "client",
+      content: content.trim(),
+      at: this.timestamp(),
+    });
     await this.event(projectId, "message_entretien", null, "Le client a répondu à l'Analyste");
     await this.enqueue(projectId, () => this.runAnalyst(projectId));
   }
@@ -119,8 +125,19 @@ export class Orchestrator {
       return this.model.analystTurn(project, transcript);
     });
     if (!turn) return;
-    await this.store.addMessage({ id: this.newId(), projectId, author: "analyste", content: turn.reponse, at: this.timestamp() });
-    await this.event(projectId, "message_entretien", "analyste", turn.entretienTermine ? "Entretien terminé" : "Nouvelles questions pour le client");
+    await this.store.addMessage({
+      id: this.newId(),
+      projectId,
+      author: "analyste",
+      content: turn.reponse,
+      at: this.timestamp(),
+    });
+    await this.event(
+      projectId,
+      "message_entretien",
+      "analyste",
+      turn.entretienTermine ? "Entretien terminé" : "Nouvelles questions pour le client",
+    );
     if (turn.entretienTermine) {
       await this.move(await this.require(projectId), "terminer_entretien");
       await this.runWriter(projectId);
@@ -168,24 +185,43 @@ export class Orchestrator {
       await this.event(projectId, "livrable_publie", "redacteur", `${d.title} (version ${version})`);
     }
     await this.move(await this.require(projectId), "specs_pretes");
-    await this.event(projectId, "validation_demandee", "orchestrateur", "Le cahier des charges attend la validation du client");
+    await this.event(
+      projectId,
+      "validation_demandee",
+      "orchestrateur",
+      "Le cahier des charges attend la validation du client",
+    );
   }
 
   // --- Outils internes ----------------------------------------------------
 
   /** Exécute le travail d'un agent : agent actif, événements de début et fin, blocage si erreur. */
-  private async task<T>(projectId: string, agent: AgentRole, label: string, work: (project: Project) => Promise<T>): Promise<T | null> {
+  private async task<T>(
+    projectId: string,
+    agent: AgentRole,
+    label: string,
+    work: (project: Project) => Promise<T>,
+  ): Promise<T | null> {
     const project = await this.require(projectId);
     await this.store.saveProject({ ...project, activeAgent: agent, blockedReason: null, updatedAt: this.timestamp() });
     await this.event(projectId, "tache_demarree", agent, `${AGENT_LABELS[agent]} : ${label.toLowerCase()}`);
     try {
       const result = await work(project);
-      await this.store.saveProject({ ...(await this.require(projectId)), activeAgent: null, updatedAt: this.timestamp() });
+      await this.store.saveProject({
+        ...(await this.require(projectId)),
+        activeAgent: null,
+        updatedAt: this.timestamp(),
+      });
       await this.event(projectId, "tache_terminee", agent, `${AGENT_LABELS[agent]} : terminé`);
       return result;
     } catch (error) {
       const reason = error instanceof Error ? error.message : String(error);
-      await this.store.saveProject({ ...(await this.require(projectId)), activeAgent: null, blockedReason: reason, updatedAt: this.timestamp() });
+      await this.store.saveProject({
+        ...(await this.require(projectId)),
+        activeAgent: null,
+        blockedReason: reason,
+        updatedAt: this.timestamp(),
+      });
       await this.event(projectId, "erreur", agent, `${AGENT_LABELS[agent]} bloqué : ${reason}`);
       return null;
     }
@@ -215,7 +251,10 @@ export class Orchestrator {
   private enqueue(projectId: string, job: () => Promise<void>): Promise<void> {
     const previous = this.queues.get(projectId) ?? Promise.resolve();
     const next = previous.then(job, job);
-    this.queues.set(projectId, next.catch(() => undefined));
+    this.queues.set(
+      projectId,
+      next.catch(() => undefined),
+    );
     return next;
   }
 

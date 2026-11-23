@@ -37,7 +37,11 @@ export function StatusBadge({ project, pendingAction }: { project: Project; pend
     );
   }
   if (pendingAction) {
-    return <span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-900">À vous : {pendingAction}</span>;
+    return (
+      <span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-900">
+        À vous : {pendingAction}
+      </span>
+    );
   }
   return <span className="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700">En attente</span>;
 }
