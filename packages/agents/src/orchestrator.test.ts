@@ -27,7 +27,7 @@ describe("Orchestrator", () => {
     const { store, orchestrator } = setup();
     const { project, work } = await orchestrator.createProject({
       name: "Résa",
-      kind: "web",
+      targets: ["web"],
       brief: "Un site de réservation",
     });
     await work;
@@ -44,7 +44,7 @@ describe("Orchestrator", () => {
     const { store, orchestrator } = setup();
     const { project, work } = await orchestrator.createProject({
       name: "Résa",
-      kind: "mobile",
+      targets: ["ios", "android"],
       brief: "Une app de réservation",
     });
     await work;
@@ -59,7 +59,11 @@ describe("Orchestrator", () => {
 
   it("produit une version 2 quand le client refuse, puis gèle à la validation", async () => {
     const { store, orchestrator } = setup();
-    const { project, work } = await orchestrator.createProject({ name: "Résa", kind: "web", brief: "Réservations" });
+    const { project, work } = await orchestrator.createProject({
+      name: "Résa",
+      targets: ["web"],
+      brief: "Réservations",
+    });
     await work;
     await orchestrator.endInterview(project.id);
 
@@ -72,9 +76,18 @@ describe("Orchestrator", () => {
     expect((await store.getProject(project.id))?.stage).toBe("conception");
   });
 
+  it("exige au moins une cible", async () => {
+    const { orchestrator } = setup();
+    await expect(orchestrator.createProject({ name: "Résa", targets: [], brief: "Réservations" })).rejects.toThrow();
+  });
+
   it("refuse une validation quand rien n'attend le client", async () => {
     const { orchestrator } = setup();
-    const { project, work } = await orchestrator.createProject({ name: "Résa", kind: "web", brief: "Réservations" });
+    const { project, work } = await orchestrator.createProject({
+      name: "Résa",
+      targets: ["web"],
+      brief: "Réservations",
+    });
     await work;
     await expect(orchestrator.reviewSpecification(project.id, { approve: true })).rejects.toThrow();
   });
@@ -90,7 +103,11 @@ describe("Orchestrator", () => {
       },
     };
     const { store, orchestrator } = setup(failing);
-    const { project, work } = await orchestrator.createProject({ name: "Résa", kind: "web", brief: "Réservations" });
+    const { project, work } = await orchestrator.createProject({
+      name: "Résa",
+      targets: ["web"],
+      brief: "Réservations",
+    });
     await work;
 
     const saved = await store.getProject(project.id);

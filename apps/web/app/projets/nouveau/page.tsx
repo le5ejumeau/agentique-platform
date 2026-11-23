@@ -2,11 +2,14 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import type { Target } from "@agentique/core";
 import { postJson } from "@/lib/live";
 
 export default function NewProject() {
   const router = useRouter();
-  const [kind, setKind] = useState<"web" | "mobile">("web");
+  const [targets, setTargets] = useState<Target[]>([]);
+  const toggle = (target: Target) =>
+    setTargets((current) => (current.includes(target) ? current.filter((t) => t !== target) : [...current, target]));
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
 
@@ -17,7 +20,7 @@ export default function NewProject() {
       const { project } = await postJson("/api/projects", {
         name: form.get("name"),
         brief: form.get("brief"),
-        kind,
+        targets,
       });
       router.push(`/projets/${project.id}`);
     } catch (e) {
@@ -48,23 +51,31 @@ export default function NewProject() {
         </div>
 
         <fieldset>
-          <legend className="text-sm font-medium">Type d&apos;application</legend>
-          <div className="mt-2 grid grid-cols-2 gap-3">
+          <legend className="text-sm font-medium">Plateformes visées</legend>
+          <p className="text-xs text-gray-500">Cochez tout ce qui vous intéresse, vous pourrez en ajouter plus tard.</p>
+          <div className="mt-2 grid gap-3 sm:grid-cols-3">
             {(
               [
-                ["web", "Application web", "Utilisée dans un navigateur, sur ordinateur et mobile"],
-                ["mobile", "Application mobile", "Installée sur iPhone et Android"],
+                ["web", "Application web", "Dans un navigateur, sur ordinateur et téléphone"],
+                ["ios", "Mobile iOS", "Application installée sur iPhone et iPad"],
+                ["android", "Mobile Android", "Application installée sur téléphones Android"],
               ] as const
             ).map(([value, label, hint]) => (
-              <button
+              <label
                 key={value}
-                type="button"
-                onClick={() => setKind(value)}
-                className={`rounded-md border p-3 text-left ${kind === value ? "border-indigo-500 bg-indigo-50" : "border-gray-300"}`}
+                className={`flex cursor-pointer items-start gap-2 rounded-md border p-3 ${targets.includes(value) ? "border-indigo-500 bg-indigo-50" : "border-gray-300"}`}
               >
-                <span className="block text-sm font-medium">{label}</span>
-                <span className="block text-xs text-gray-500">{hint}</span>
-              </button>
+                <input
+                  type="checkbox"
+                  checked={targets.includes(value)}
+                  onChange={() => toggle(value)}
+                  className="mt-0.5"
+                />
+                <span>
+                  <span className="block text-sm font-medium">{label}</span>
+                  <span className="block text-xs text-gray-500">{hint}</span>
+                </span>
+              </label>
             ))}
           </div>
         </fieldset>
@@ -87,7 +98,7 @@ export default function NewProject() {
 
         <button
           type="submit"
-          disabled={sending}
+          disabled={sending || targets.length === 0}
           className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
         >
           {sending ? "Création…" : "Lancer l'entretien"}

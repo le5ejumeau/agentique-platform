@@ -1,5 +1,6 @@
 import {
   AGENT_LABELS,
+  describeTargets,
   nextStage,
   STAGE_LABELS,
   specificationToMarkdown,
@@ -7,7 +8,7 @@ import {
   type Deliverable,
   type Project,
   type ProjectEventType,
-  type ProjectKind,
+  type Target,
   type Specification,
   type Store,
   type WorkflowAction,
@@ -21,7 +22,7 @@ export interface OrchestratorOptions {
 
 export interface NewProject {
   name: string;
-  kind: ProjectKind;
+  targets: Target[];
   brief: string;
 }
 
@@ -50,11 +51,12 @@ export class Orchestrator {
 
   /** Crée le projet et lance l'entretien ; renvoie le projet dès sa création. */
   async createProject(input: NewProject): Promise<{ project: Project; work: Promise<void> }> {
+    if (input.targets.length === 0) throw new Error("Choisissez au moins une cible : web, iOS ou Android.");
     const at = this.timestamp();
     const project: Project = {
       id: this.newId(),
       name: input.name.trim(),
-      kind: input.kind,
+      targets: [...input.targets],
       brief: input.brief.trim(),
       stage: "entretien",
       activeAgent: null,
@@ -63,7 +65,7 @@ export class Orchestrator {
       updatedAt: at,
     };
     await this.store.saveProject(project);
-    await this.event(project.id, "projet_cree", null, `Projet créé (${input.kind === "mobile" ? "mobile" : "web"})`);
+    await this.event(project.id, "projet_cree", null, `Projet créé (${describeTargets(input.targets)})`);
     const work = this.enqueue(project.id, () => this.runAnalyst(project.id));
     return { project, work };
   }

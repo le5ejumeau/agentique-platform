@@ -1,7 +1,12 @@
 -- Schéma initial de la plateforme : projets, fil d'activité, entretien, livrables.
 -- Miroir des types de packages/core/src/domain.ts. Les noms de valeurs restent en français.
 
-create type project_kind as enum ('web', 'mobile');
+create type project_target as enum ('web', 'ios', 'android');
+
+-- Vrai si le tableau ne contient aucun doublon (une sous-requête est interdite dans un check).
+create function targets_are_distinct(targets project_target[]) returns boolean
+  language sql immutable
+  as $$ select cardinality(targets) = (select count(distinct t) from unnest(targets) as t) $$;
 
 create type project_stage as enum (
   'entretien', 'specification', 'validation_specs', 'conception',
@@ -24,7 +29,8 @@ create table projects (
   id uuid primary key default gen_random_uuid(),
   owner_id uuid not null references auth.users (id) on delete cascade,
   name text not null check (length(name) between 1 and 200),
-  kind project_kind not null,
+  -- Au moins une plateforme, sans doublon.
+  targets project_target[] not null check (cardinality(targets) >= 1 and targets_are_distinct(targets)),
   brief text not null default '',
   stage project_stage not null default 'entretien',
   active_agent agent_role,

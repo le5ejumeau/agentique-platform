@@ -3,7 +3,32 @@
  * Ces types sont partagés par l'interface, les agents et la base de données.
  */
 
-export type ProjectKind = "web" | "mobile";
+/** Plateformes visées par un projet. Un projet en vise au moins une, et peut en viser plusieurs. */
+export const TARGETS = ["web", "ios", "android"] as const;
+
+export type Target = (typeof TARGETS)[number];
+
+export const TARGET_LABELS: Record<Target, string> = {
+  web: "Web",
+  ios: "iOS",
+  android: "Android",
+};
+
+/** Cibles valides, dédoublonnées et dans l'ordre de TARGETS, ou null si aucune n'est valide. */
+export function parseTargets(value: unknown): Target[] | null {
+  if (!Array.isArray(value)) return null;
+  const targets = TARGETS.filter((t) => value.includes(t));
+  return targets.length > 0 && targets.length === value.length ? targets : null;
+}
+
+/** Description lisible des cibles, par exemple « mobile iOS et Android, et web ». */
+export function describeTargets(targets: readonly Target[]): string {
+  const mobile = targets.filter((t) => t !== "web").map((t) => TARGET_LABELS[t]);
+  const parts: string[] = [];
+  if (mobile.length) parts.push(`mobile ${mobile.join(" et ")}`);
+  if (targets.includes("web")) parts.push("web");
+  return parts.join(", et ");
+}
 
 /** Étapes d'un projet, dans l'ordre du parcours (voir docs/architecture.md). */
 export const STAGES = [
@@ -43,7 +68,8 @@ export const AGENT_LABELS: Record<AgentRole, string> = {
 export interface Project {
   id: string;
   name: string;
-  kind: ProjectKind;
+  /** Plateformes visées, au moins une. */
+  targets: Target[];
   /** Description libre du besoin, saisie à la création. */
   brief: string;
   stage: ProjectStage;

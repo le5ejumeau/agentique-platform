@@ -1,4 +1,4 @@
-import type { InterviewMessage, Project } from "@agentique/core";
+import { describeTargets, type InterviewMessage, type Project } from "@agentique/core";
 
 export const ANALYSTE_SYSTEM = `Tu es l'Analyste fonctionnel d'un studio qui conçoit des applications web et mobiles.
 Tu mènes un entretien avec un client, souvent peu technique, pour comprendre son besoin avant qu'une équipe rédige le cahier des charges puis construise un prototype.
@@ -30,8 +30,7 @@ Règles :
 - Si une version précédente et des commentaires du client sont fournis, pars de cette version et applique les commentaires sans perdre le reste.`;
 
 export function projectContext(project: Project): string {
-  const kind = project.kind === "mobile" ? "application mobile" : "application web";
-  return `Projet : ${project.name} (${kind})\nBrief initial du client :\n${project.brief}`;
+  return `Projet : ${project.name}\nPlateformes visées : ${describeTargets(project.targets)}\nBrief initial du client :\n${project.brief}`;
 }
 
 export function transcriptToText(transcript: InterviewMessage[]): string {

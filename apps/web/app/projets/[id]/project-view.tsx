@@ -12,6 +12,7 @@ import {
   type ProjectEvent,
 } from "@agentique/core";
 import { StageTimeline, StatusBadge } from "@/components/stage";
+import { TargetBadges } from "@/components/targets";
 import { formatTime, postJson, useLiveData } from "@/lib/live";
 
 interface Snapshot {
@@ -56,7 +57,7 @@ export function ProjectView({ id }: { id: string }) {
         </Link>
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-2xl font-semibold">{project.name}</h1>
-          <span className="rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-600 uppercase">{project.kind}</span>
+          <TargetBadges targets={project.targets} />
           <StatusBadge project={project} pendingAction={pendingAction} />
         </div>
         <StageTimeline project={project} />

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { STAGE_LABELS, type Project, type ProjectEvent } from "@agentique/core";
 import { StatusBadge } from "@/components/stage";
+import { TargetBadges } from "@/components/targets";
 import { formatTime, useLiveData } from "@/lib/live";
 
 interface DashboardData {
@@ -57,9 +58,7 @@ export default function Dashboard() {
             >
               <div className="flex items-start justify-between gap-2">
                 <h2 className="font-semibold">{project.name}</h2>
-                <span className="rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-600 uppercase">
-                  {project.kind}
-                </span>
+                <TargetBadges targets={project.targets} />
               </div>
               <p className="mt-1 text-sm text-gray-600">{STAGE_LABELS[project.stage]}</p>
               <div className="mt-3">

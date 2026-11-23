@@ -1,4 +1,4 @@
-import type { InterviewMessage, Project, Specification } from "@agentique/core";
+import { describeTargets, type InterviewMessage, type Project, type Specification } from "@agentique/core";
 import type { AgentModel, AnalystTurn, SpecificationRequest } from "./model";
 
 const QUESTIONS = [
@@ -39,7 +39,7 @@ export class DemoModel implements AgentModel {
       personas: [{ nom: "Utilisateur principal", description: answers[0] ?? "À préciser" }],
       parcours: [{ nom: "Parcours principal", etapes: answers[1] ? [answers[1]] : ["À préciser"] }],
       reglesMetier: answers[2] ? [answers[2]] : [],
-      contraintes: [project.kind === "mobile" ? "Application mobile iOS et Android" : "Application web responsive"],
+      contraintes: [`Plateformes visées : ${describeTargets(project.targets)}`],
       horsPerimetre: answers[3] ? [answers[3]] : [],
       userStories: [
         {

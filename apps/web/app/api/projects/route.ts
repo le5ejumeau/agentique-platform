@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { pendingClientAction } from "@agentique/core";
+import { parseTargets, pendingClientAction } from "@agentique/core";
 import { background, runtime } from "@/lib/runtime";
 
 export const dynamic = "force-dynamic";
@@ -17,14 +17,21 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const body = (await request.json().catch(() => null)) as { name?: unknown; kind?: unknown; brief?: unknown } | null;
+  const body = (await request.json().catch(() => null)) as {
+    name?: unknown;
+    targets?: unknown;
+    brief?: unknown;
+  } | null;
   const name = typeof body?.name === "string" ? body.name.trim() : "";
   const brief = typeof body?.brief === "string" ? body.brief.trim() : "";
-  const kind = body?.kind === "mobile" ? "mobile" : body?.kind === "web" ? "web" : null;
-  if (!name || !brief || !kind) {
-    return NextResponse.json({ error: "Nom, type (web ou mobile) et description sont obligatoires." }, { status: 400 });
+  const targets = parseTargets(body?.targets);
+  if (!name || !brief || !targets) {
+    return NextResponse.json(
+      { error: "Nom, description et au moins une cible (web, iOS ou Android) sont obligatoires." },
+      { status: 400 },
+    );
   }
-  const { project, work } = await runtime().orchestrator.createProject({ name, kind, brief });
+  const { project, work } = await runtime().orchestrator.createProject({ name, targets, brief });
   background(work);
   return NextResponse.json({ project }, { status: 201 });
 }

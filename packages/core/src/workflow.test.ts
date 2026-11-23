@@ -31,7 +31,7 @@ describe("pendingClientAction", () => {
   const base: Project = {
     id: "p1",
     name: "Test",
-    kind: "web",
+    targets: ["web"],
     brief: "",
     stage: "validation_specs",
     activeAgent: null,
