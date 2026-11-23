@@ -7,6 +7,7 @@ import remarkGfm from "remark-gfm";
 import {
   AGENT_LABELS,
   type Deliverable,
+  type Documentation,
   type InterviewMessage,
   type Project,
   type ProjectEvent,
@@ -23,7 +24,7 @@ interface Snapshot {
   pendingAction: string | null;
 }
 
-type Tab = "entretien" | "livrables";
+type Tab = "entretien" | "livrables" | "documentation";
 
 export function ProjectView({ id }: { id: string }) {
   const { data, error } = useLiveData<Snapshot>(`/api/projects/${id}`, id);
@@ -47,7 +48,7 @@ export function ProjectView({ id }: { id: string }) {
   }
   if (!data) return <p className="text-sm text-gray-500">Chargement…</p>;
 
-  const { project, events, messages, deliverables, pendingAction } = data;
+  const { project, events, messages, pendingAction } = data;
 
   return (
     <div className="space-y-5">
@@ -75,7 +76,8 @@ export function ProjectView({ id }: { id: string }) {
             {(
               [
                 ["entretien", `Entretien (${messages.length})`],
-                ["livrables", `Livrables (${deliverables.length})`],
+                ["livrables", "Cahier des charges"],
+                ["documentation", "Documentation"],
               ] as const
             ).map(([value, label]) => (
               <button
@@ -88,7 +90,9 @@ export function ProjectView({ id }: { id: string }) {
             ))}
           </nav>
           <div className="p-4">
-            {tab === "entretien" ? <Interview snapshot={data} /> : <Deliverables snapshot={data} />}
+            {tab === "entretien" && <Interview snapshot={data} />}
+            {tab === "livrables" && <Deliverables snapshot={data} />}
+            {tab === "documentation" && <DocumentationView snapshot={data} />}
           </div>
         </section>
 
@@ -188,6 +192,46 @@ function Interview({ snapshot }: { snapshot: Snapshot }) {
       ) : (
         <p className="border-t border-gray-100 pt-3 text-sm text-gray-500">L&apos;entretien est terminé.</p>
       )}
+    </div>
+  );
+}
+
+/** Documentation vivante : les pages du dossier docs/ de l'application, à jour en direct. */
+function DocumentationView({ snapshot }: { snapshot: Snapshot }) {
+  const doc = snapshot.deliverables.find((d) => d.kind === "documentation");
+  const pages = (doc?.data as Documentation | undefined)?.pages ?? [];
+  const [selected, setSelected] = useState<string | null>(null);
+  const page = pages.find((p) => p.path === selected) ?? pages[0];
+
+  if (!doc || !page) {
+    return <p className="text-sm text-gray-500">Le Documentaliste prépare la documentation…</p>;
+  }
+
+  return (
+    <div className="grid gap-4 md:grid-cols-[180px_1fr]">
+      <nav aria-label="Pages de la documentation">
+        <ul className="space-y-1 text-sm">
+          {pages.map((p) => (
+            <li key={p.path}>
+              <button
+                onClick={() => setSelected(p.path)}
+                className={`w-full rounded px-2 py-1 text-left ${p.path === page.path ? "bg-indigo-50 font-medium text-indigo-800" : "text-gray-700 hover:bg-gray-50"}`}
+              >
+                {p.title}
+              </button>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-3 px-2 text-xs text-gray-500">
+          Version {doc.version} · {formatTime(doc.createdAt)}
+        </p>
+      </nav>
+      <div>
+        <p className="mb-2 font-mono text-xs text-gray-400">{page.path}</p>
+        <article className="markdown">
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{page.markdown}</ReactMarkdown>
+        </article>
+      </div>
     </div>
   );
 }

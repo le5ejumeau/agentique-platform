@@ -14,7 +14,7 @@ create type project_stage as enum (
 );
 
 create type agent_role as enum (
-  'orchestrateur', 'analyste', 'redacteur', 'designer_ux',
+  'orchestrateur', 'analyste', 'redacteur', 'documentaliste', 'designer_ux',
   'developpeur_prototype', 'controleur_qualite'
 );
 
@@ -23,7 +23,7 @@ create type project_event_type as enum (
   'livrable_publie', 'validation_demandee', 'validation_donnee', 'erreur'
 );
 
-create type deliverable_kind as enum ('cahier_des_charges', 'backlog');
+create type deliverable_kind as enum ('cahier_des_charges', 'backlog', 'documentation');
 
 create table projects (
   id uuid primary key default gen_random_uuid(),

@@ -1,5 +1,8 @@
 import {
   AGENT_LABELS,
+  buildDocumentation,
+  sameDocumentation,
+  type Documentation,
   describeTargets,
   nextStage,
   STAGE_LABELS,
@@ -110,6 +113,7 @@ export class Orchestrator {
           "orchestrateur",
           "Cahier des charges gelé. La conception et le prototypage arrivent dans le prochain lot.",
         );
+        await this.runDocumentalist(projectId);
         return;
       }
       const feedback = decision.comment?.trim() || "Le client demande une nouvelle version.";
@@ -143,7 +147,9 @@ export class Orchestrator {
     if (turn.entretienTermine) {
       await this.move(await this.require(projectId), "terminer_entretien");
       await this.runWriter(projectId);
+      return;
     }
+    await this.runDocumentalist(projectId);
   }
 
   private async runWriter(projectId: string, feedback?: string) {
@@ -193,6 +199,37 @@ export class Orchestrator {
       "orchestrateur",
       "Le cahier des charges attend la validation du client",
     );
+    await this.runDocumentalist(projectId);
+  }
+
+  /**
+   * Le Documentaliste tient la documentation de l'application à jour après chaque avancée.
+   * Il ne publie une nouvelle version que si le contenu a changé.
+   * Les pages iront dans le dossier docs/ du dépôt de l'application dès qu'il existera (lot prototypage).
+   */
+  private async runDocumentalist(projectId: string) {
+    const [project, messages, events, deliverables] = await Promise.all([
+      this.require(projectId),
+      this.store.listMessages(projectId),
+      this.store.listEvents(projectId),
+      this.store.listDeliverables(projectId),
+    ]);
+    const doc = buildDocumentation({ project, messages, events, deliverables });
+    const previous = deliverables.find((d) => d.kind === "documentation");
+    if (previous && sameDocumentation(previous.data as Documentation, doc)) return;
+
+    const version = (previous?.version ?? 0) + 1;
+    await this.store.addDeliverable({
+      id: this.newId(),
+      projectId,
+      kind: "documentation",
+      version,
+      title: "Documentation",
+      markdown: doc.pages[0]?.markdown ?? "",
+      data: doc,
+      createdAt: this.timestamp(),
+    });
+    await this.event(projectId, "livrable_publie", "documentaliste", `Documentation mise à jour (version ${version})`);
   }
 
   // --- Outils internes ----------------------------------------------------

@@ -25,6 +25,7 @@ Les étapes et les transitions autorisées sont définies dans `packages/core/sr
 | Orchestrateur               | Lot 1 | Fait avancer le projet, déclenche les agents, publie les événements |
 | Analyste fonctionnel        | Lot 1 | Mène l'entretien, au plus 3 questions par message                   |
 | Rédacteur de spécifications | Lot 1 | Produit le cahier des charges et le backlog (sortie structurée)     |
+| Documentaliste              | Lot 1 | Tient la documentation de l'application à jour après chaque avancée |
 | Designer UX                 | Lot 2 | Écrans, navigation, thème                                           |
 | Développeur prototype       | Lot 2 | Code front React (web) ou Expo (mobile) avec données simulées       |
 | Contrôleur qualité          | Lot 2 | Couverture des user stories, lancement du prototype                 |
@@ -32,6 +33,19 @@ Les étapes et les transitions autorisées sont définies dans `packages/core/sr
 L'Analyste et le Rédacteur font chacun un appel à l'API Claude (`claude-opus-5-5`) avec sortie structurée validée par Zod ; ils n'ont pas besoin d'outils. Le Développeur prototype, qui écrit des fichiers et lance des commandes, s'appuiera sur le Claude Agent SDK dans un conteneur isolé par projet.
 
 Chaque appel à un agent passe par `Orchestrator.task()` : l'agent est marqué actif, un événement de début puis de fin est publié, et une erreur bloque le projet avec sa raison au lieu de le laisser dans un état incohérent.
+
+## Documentation des applications
+
+Le Documentaliste reconstruit la documentation après chaque avancée (réponse à l'entretien, cahier des charges, validation) et publie une nouvelle version seulement si le contenu a changé. Elle est faite de pages Markdown (`packages/core/src/documentation.ts`) :
+
+| Fichier                  | Contenu                                                    |
+| ------------------------ | ---------------------------------------------------------- |
+| `docs/README.md`         | Présentation, plateformes visées, étape actuelle, sommaire |
+| `docs/besoin.md`         | Brief initial et entretien avec l'Analyste                 |
+| `docs/specifications.md` | Dernière version du cahier des charges et son statut       |
+| `docs/decisions.md`      | Journal daté des décisions (création, étapes, validations) |
+
+La plateforme l'affiche en direct dans l'onglet Documentation, réservé au client. Dès que le dépôt de chaque application existera (lot prototypage), ces pages y seront écrites dans `docs/`, pour suivre le code version par version. Un site public (Starlight) pourra être publié à partir de ce dossier.
 
 ## Suivi en temps réel
 

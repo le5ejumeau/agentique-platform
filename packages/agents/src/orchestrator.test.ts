@@ -52,9 +52,9 @@ describe("Orchestrator", () => {
 
     expect((await store.getProject(project.id))?.stage).toBe("validation_specs");
     const deliverables = await store.listDeliverables(project.id);
-    expect(deliverables.map((d) => d.kind).sort()).toEqual(["backlog", "cahier_des_charges"]);
+    expect(deliverables.map((d) => d.kind).sort()).toEqual(["backlog", "cahier_des_charges", "documentation"]);
     const events = await store.listEvents(project.id);
-    expect(events.at(-1)?.type).toBe("validation_demandee");
+    expect(events.some((e) => e.type === "validation_demandee")).toBe(true);
   });
 
   it("produit une version 2 quand le client refuse, puis gèle à la validation", async () => {
@@ -74,6 +74,26 @@ describe("Orchestrator", () => {
 
     await orchestrator.reviewSpecification(project.id, { approve: true });
     expect((await store.getProject(project.id))?.stage).toBe("conception");
+  });
+
+  it("tient la documentation à jour à chaque étape", async () => {
+    const { store, orchestrator } = setup();
+    const { project, work } = await orchestrator.createProject({
+      name: "Résa",
+      targets: ["web"],
+      brief: "Réservations",
+    });
+    await work;
+    const first = (await store.listDeliverables(project.id)).find((d) => d.kind === "documentation");
+    expect(first?.version).toBe(1);
+
+    await orchestrator.endInterview(project.id);
+    await orchestrator.reviewSpecification(project.id, { approve: true });
+    const doc = (await store.listDeliverables(project.id)).find((d) => d.kind === "documentation");
+    const pages = (doc?.data as { pages: { path: string; markdown: string }[] }).pages;
+    expect(pages.map((p) => p.path)).toContain("docs/specifications.md");
+    expect(pages.find((p) => p.path === "docs/specifications.md")?.markdown).toContain("validé par le client");
+    expect(pages.find((p) => p.path === "docs/decisions.md")?.markdown).toContain("Le client a validé");
   });
 
   it("exige au moins une cible", async () => {

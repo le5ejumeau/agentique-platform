@@ -54,12 +54,19 @@ export const STAGE_LABELS: Record<ProjectStage, string> = {
 };
 
 export type AgentRole =
-  "orchestrateur" | "analyste" | "redacteur" | "designer_ux" | "developpeur_prototype" | "controleur_qualite";
+  | "orchestrateur"
+  | "analyste"
+  | "redacteur"
+  | "documentaliste"
+  | "designer_ux"
+  | "developpeur_prototype"
+  | "controleur_qualite";
 
 export const AGENT_LABELS: Record<AgentRole, string> = {
   orchestrateur: "Orchestrateur",
   analyste: "Analyste fonctionnel",
   redacteur: "Rédacteur de spécifications",
+  documentaliste: "Documentaliste",
   designer_ux: "Designer UX",
   developpeur_prototype: "Développeur prototype",
   controleur_qualite: "Contrôleur qualité",
@@ -110,7 +117,7 @@ export interface InterviewMessage {
   at: string;
 }
 
-export type DeliverableKind = "cahier_des_charges" | "backlog";
+export type DeliverableKind = "cahier_des_charges" | "backlog" | "documentation";
 
 export interface Deliverable {
   id: string;
